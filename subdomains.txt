@@ -1,0 +1,12 @@
+www
+mail
+ftp
+admin
+test
+api
+dev
+blog
+vpn
+m
+ns1
+ns2
