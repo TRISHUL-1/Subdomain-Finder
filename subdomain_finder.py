@@ -1,4 +1,4 @@
-import socket
+import dns.resolver
 from concurrent.futures import ThreadPoolExecutor
 
 def check_subdomain(subdomain, domain): #checks whether the subdomain exits or not
@@ -6,23 +6,24 @@ def check_subdomain(subdomain, domain): #checks whether the subdomain exits or n
     full_domain = f"{subdomain}.{domain}"   #combines the prefix and sufix to form a working domain
 
     try:
-        ip = socket.gethostbyname(full_domain)  #calls the gethostbyname method for the socket module
-        print(f"[+] Found: {full_domain} -> {ip}")  #which returns the ip of the domain if it exists or else it gives an error
-        return((full_domain,ip))
+        answers = dns.resolver.resolve(full_domain, 'A')    #call the resolve method to get the ip address using the A record
+        ips = [answer.to_text() for answer in answers]
+        print(f"[+] Found: {full_domain} -> {', '.join(ips)}")  #which returns the ip of the domain if it exists or else it gives an error
+        return((full_domain,ips))
 
-    except socket.gaierror:
+    except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.LifetimeTimeout, dns.resolver.NoNameservers):
         return None
 
-def find_subdomain(domain, wordlist):
+def find_subdomain(domain, wordlist, max_threads=100):
 
     with open(wordlist, 'r') as file:
-        subdomains = [line.strip() for line in file]
+        subdomains = [line.strip() for line in file if line.strip()]
 
         results = []
 
         try:
 
-            with ThreadPoolExecutor(max_workers=30) as executor:
+            with ThreadPoolExecutor(max_workers=max_threads) as executor:
                 futures = [executor.submit(check_subdomain, subdomain, domain) for subdomain in subdomains]
 
                 for future in futures:
