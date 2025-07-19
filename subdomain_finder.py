@@ -28,9 +28,7 @@ if __name__ == "__main__":
 
                 wordlist = "subdomains1.txt"
 
-                found = [enumerator.find_subdomain(domain, wordlist)]
-
-                print(f"{len(found)} Subdomains found!!")
+                enumerator.find_subdomain(domain, wordlist)
 
             except KeyboardInterrupt:
                 print("\n[!] Script interrupted.")
